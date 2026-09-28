@@ -21,6 +21,9 @@ Użytkownik wpisuje parametry kredytu i planowane nadpłaty, a aplikacja pokazuj
 - harmonogram spłat (tabela: miesiąc, rata, część kapitałowa, część odsetkowa, nadpłata, saldo)
 - wykres salda w czasie: bez nadpłat vs z nadpłatami (widać, o ile krócej)
 - wykres struktury rat rok po roku: odsetki / kapitał / nadpłaty
+- wykres odsetek narastająco: bez nadpłat vs z nadpłatami
+- porównanie obok siebie: „skrócić okres” vs „obniżyć ratę”
+- eksport obu harmonogramów do CSV (otwiera się w polskim Excelu)
 
 **Technicznie**
 - Vite + React + TypeScript (strict) + Vitest
@@ -40,7 +43,7 @@ Użytkownik wpisuje parametry kredytu i planowane nadpłaty, a aplikacja pokazuj
 - prognozy WIBOR/WIRON (użytkownik sam wpisuje scenariusz zmian stopy)
 - prowizje za wcześniejszą spłatę, ubezpieczenia, RRSO
 - zapisywanie danych (konto, baza, localStorage), backend
-- eksport do PDF/Excel
+- eksport do PDF i do .xlsx (CSV wystarcza)
 - wiele walut, inne języki interfejsu
 - porównywanie kilku kredytów naraz
 
@@ -83,6 +86,12 @@ Każdy krok kończy się: `npm run test` + `npm run build` + pytania sprawdzają
 19. ✅ **Dane do wykresów** — sumy roczne (odsetki, kapitał, nadpłaty) i saldo na koniec roku w `src/lib/`, testy.
 20. ✅ **Wykres salda** — instalacja Recharts, dwie linie: bez nadpłat / z nadpłatami.
 21. ✅ **Wykres struktury rat** — słupki roczne: odsetki / kapitał / nadpłaty.
+
+### Etap 5b — dodatki
+21a. ✅ **Układ** — wykresy w prawej kolumnie pod wynikami, jeden pod drugim.
+21b. ✅ **Porównanie wariantów** — funkcja w `src/lib/` liczy oba efekty nadpłaty; tabelka obok siebie, wybrany wariant podświetlony.
+21c. ✅ **Wykres odsetek narastająco** — dane w `src/lib/`, trzecia karta z wykresem.
+21d. ✅ **Eksport do CSV** — generowanie tekstu CSV w `src/lib/` (średnik, przecinek dziesiętny, polskie znaki), przycisk „Pobierz harmonogram”.
 
 ### Etap 6 — wykończenie
 22. **Walidacja** — błędne/puste dane, komunikaty po polsku, logika walidacji w `src/lib/`.

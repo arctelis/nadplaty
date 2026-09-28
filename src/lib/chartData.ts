@@ -68,3 +68,30 @@ export function yearTicks(lastMonth: number): number[] {
   }
   return ticks
 }
+
+export interface CumulativeInterestPoint {
+  month: number
+  withoutOverpayments: number
+  withOverpayments: number
+}
+
+// Interest paid up to and including each month (month 0 = nothing paid yet).
+// After a schedule ends, its total stays flat, so the gap between the lines is the saving.
+export function cumulativeInterestSeries(
+  withoutOverpayments: ScheduleRow[],
+  withOverpayments: ScheduleRow[],
+): CumulativeInterestPoint[] {
+  const lastMonth = Math.max(withoutOverpayments.length, withOverpayments.length)
+  const points: CumulativeInterestPoint[] = [{ month: 0, withoutOverpayments: 0, withOverpayments: 0 }]
+
+  for (let month = 1; month <= lastMonth; month++) {
+    const previous = points[month - 1]
+    points.push({
+      month,
+      withoutOverpayments: previous.withoutOverpayments + (withoutOverpayments[month - 1]?.interestPart ?? 0),
+      withOverpayments: previous.withOverpayments + (withOverpayments[month - 1]?.interestPart ?? 0),
+    })
+  }
+
+  return points
+}

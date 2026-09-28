@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import BalanceChart from './components/BalanceChart'
+import CumulativeInterestChart from './components/CumulativeInterestChart'
+import EffectComparison from './components/EffectComparison'
 import LoanForm from './components/LoanForm'
 import OverpaymentForm from './components/OverpaymentForm'
 import PaymentStructureChart from './components/PaymentStructureChart'
-import { balanceSeries, yearlyBreakdown } from './lib/chartData'
+import ScheduleExport from './components/ScheduleExport'
+import { balanceSeries, cumulativeInterestSeries, yearlyBreakdown } from './lib/chartData'
+import { compareEffects } from './lib/comparison'
 import { formatMonths, formatPercent, formatPLN } from './lib/format'
 import { toLoanParams, type LoanFormValues } from './lib/loanForm'
 import { toOverpaymentPlan, type OverpaymentFormValues } from './lib/overpaymentForm'
@@ -58,36 +62,44 @@ function App() {
           </div>
         </section>
 
-        <aside className="card result-panel">
-          <p className="eyebrow">Pierwsza rata</p>
-          <p className="result-amount">
-            {Number.isFinite(firstInstallment) ? formatPLN(firstInstallment) : '—'}
-          </p>
-          <p className="result-meta">
-            {values.installmentType === 'equal' ? 'Raty równe' : 'Raty malejące'}
-            {Number.isFinite(loan.termMonths) && ` · ${formatMonths(loan.termMonths)}`}
-            {Number.isFinite(loan.annualRatePercent) && ` · ${formatPercent(loan.annualRatePercent)}`}
-          </p>
+        <div className="results-column">
+          <aside className="card result-panel">
+            <p className="eyebrow">Pierwsza rata</p>
+            <p className="result-amount">
+              {Number.isFinite(firstInstallment) ? formatPLN(firstInstallment) : '—'}
+            </p>
+            <p className="result-meta">
+              {values.installmentType === 'equal' ? 'Raty równe' : 'Raty malejące'}
+              {Number.isFinite(loan.termMonths) && ` · ${formatMonths(loan.termMonths)}`}
+              {Number.isFinite(loan.annualRatePercent) && ` · ${formatPercent(loan.annualRatePercent)}`}
+            </p>
 
-          <hr className="divider" />
+            <hr className="divider" />
 
-          <p className="eyebrow">Oszczędność na odsetkach</p>
-          <p className="result-amount">
-            {Number.isFinite(summary.interestSaved) ? formatPLN(summary.interestSaved) : '—'}
-          </p>
-        </aside>
+            <p className="eyebrow">Oszczędność na odsetkach</p>
+            <p className="result-amount">
+              {Number.isFinite(summary.interestSaved) ? formatPLN(summary.interestSaved) : '—'}
+            </p>
+          </aside>
+
+          {canShowCharts && (
+            <>
+              <EffectComparison comparison={compareEffects(loan, plan)} selected={plan.effect} />
+              <BalanceChart
+                points={balanceSeries(loan.principal, schedule, scheduleWithOverpayments)}
+                payoffMonth={scheduleWithOverpayments.length}
+                monthsSaved={summary.monthsSaved}
+              />
+              <CumulativeInterestChart
+                points={cumulativeInterestSeries(schedule, scheduleWithOverpayments)}
+                interestSaved={summary.interestSaved}
+              />
+              <PaymentStructureChart years={yearlyBreakdown(scheduleWithOverpayments)} />
+              <ScheduleExport withoutOverpayments={schedule} withOverpayments={scheduleWithOverpayments} />
+            </>
+          )}
+        </div>
       </main>
-
-      {canShowCharts && (
-        <section className="container charts">
-          <BalanceChart
-            points={balanceSeries(loan.principal, schedule, scheduleWithOverpayments)}
-            payoffMonth={scheduleWithOverpayments.length}
-            monthsSaved={summary.monthsSaved}
-          />
-          <PaymentStructureChart years={yearlyBreakdown(scheduleWithOverpayments)} />
-        </section>
-      )}
     </>
   )
 }

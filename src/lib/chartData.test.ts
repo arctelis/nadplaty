@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { balanceSeries, yearlyBreakdown, yearTicks } from './chartData'
+import { balanceSeries, cumulativeInterestSeries, yearlyBreakdown, yearTicks } from './chartData'
 import { buildSchedule } from './schedule'
 import type { LoanParams, ScheduleRow } from './types'
 
@@ -87,5 +87,30 @@ describe('yearTicks', () => {
 
   it('ticks every year for a loan up to 10 years', () => {
     expect(yearTicks(36)).toEqual([0, 12, 24, 36])
+  })
+})
+
+describe('cumulativeInterestSeries', () => {
+  const points = cumulativeInterestSeries(without, withOverpayment)
+
+  it('starts at zero and has one point per month of the longer schedule', () => {
+    expect(points[0]).toEqual({ month: 0, withoutOverpayments: 0, withOverpayments: 0 })
+    expect(points).toHaveLength(121)
+  })
+
+  it('adds up interest month by month', () => {
+    // Month 1: 1% of 120k for both
+    expect(points[1].withoutOverpayments).toBeCloseTo(1200, 6)
+    expect(points[1].withOverpayments).toBeCloseTo(1200, 6)
+  })
+
+  it('ends at the total interest of each schedule', () => {
+    expect(points[120].withoutOverpayments).toBeCloseTo(72_600, 6)
+    expect(points[120].withOverpayments).toBeCloseTo(62_050, 6)
+  })
+
+  it('stays flat after the shorter schedule ends', () => {
+    expect(points[111].withOverpayments).toBeCloseTo(points[110].withOverpayments, 6)
+    expect(points[120].withOverpayments).toBeCloseTo(points[110].withOverpayments, 6)
   })
 })
