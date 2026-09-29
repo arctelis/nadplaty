@@ -122,3 +122,13 @@ export function hasOverpaymentErrors(errors: OverpaymentFormErrors): boolean {
     Object.keys(errors.oneTime).length > 0
   )
 }
+
+// Expected yearly return of a deposit or bonds, used in the "invest instead" comparison.
+export function validateReturnRate(text: string): string | undefined {
+  if (isBlank(text)) return 'Podaj oprocentowanie lokaty lub obligacji.'
+  const value = parseDecimal(text)
+  if (Number.isNaN(value)) return 'Wpisz liczbę, np. 5.'
+  if (value < 0) return 'Stopa nie może być ujemna.'
+  if (value > MAX_RATE_PERCENT) return `Maksymalnie ${MAX_RATE_PERCENT}%.`
+  return undefined
+}

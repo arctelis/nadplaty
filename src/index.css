@@ -526,8 +526,8 @@ h1 {
   padding: 4px 4px 0;
 }
 
-.assumptions p:last-child {
-  margin: 0;
+.assumptions p:not(.eyebrow) {
+  margin: 0 0 8px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--color-muted);
@@ -558,4 +558,41 @@ h1 {
   font-family: var(--font-serif);
   font-size: 26px;
   line-height: 1.2;
+}
+
+/* Overpay vs invest */
+
+.invest-card {
+  padding: 24px;
+}
+
+.invest-card .card-title {
+  margin-bottom: 16px;
+}
+
+.invest-inputs {
+  display: grid;
+  gap: 12px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.invest-note {
+  margin: 16px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-muted);
 }

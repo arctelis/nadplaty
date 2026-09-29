@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { LoanFormValues } from './loanForm'
 import type { OverpaymentFormValues } from './overpaymentForm'
-import { hasLoanErrors, hasOverpaymentErrors, validateLoanForm, validateOverpaymentForm } from './validation'
+import {
+  hasLoanErrors,
+  hasOverpaymentErrors,
+  validateLoanForm,
+  validateOverpaymentForm,
+  validateReturnRate,
+} from './validation'
 
 const validLoan: LoanFormValues = {
   principal: '300 000',
@@ -124,4 +130,17 @@ describe('validateOverpaymentForm', () => {
 it('uses the right Polish form of "rata" for the loan length', () => {
   const errors = validateOverpaymentForm({ ...emptyOverpayments, recurringStartMonth: '30' }, 22)
   expect(errors.recurringStartMonth).toBe('Kredyt ma 22 raty.')
+})
+
+describe('validateReturnRate', () => {
+  it.each([
+    ['5', undefined],
+    ['0', undefined],
+    ['', 'Podaj oprocentowanie lokaty lub obligacji.'],
+    ['abc', 'Wpisz liczbę, np. 5.'],
+    ['-2', 'Stopa nie może być ujemna.'],
+    ['40', 'Maksymalnie 30%.'],
+  ])('"%s" -> %s', (text, expected) => {
+    expect(validateReturnRate(text)).toBe(expected)
+  })
 })
