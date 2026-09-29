@@ -8,6 +8,7 @@
   --color-subtle: #ebe5e0;
   --color-accent: #390000;
   --color-positive: #16876a;
+  --color-error: #b3261e;
 
   --font-sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
@@ -530,4 +531,31 @@ h1 {
   font-size: 13px;
   line-height: 1.6;
   color: var(--color-muted);
+}
+
+/* Validation */
+
+.input-wrap.has-error {
+  border-color: var(--color-error);
+}
+
+.input-wrap.has-error:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+.field-error {
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+.one-time-row {
+  display: grid;
+  gap: 6px;
+}
+
+.invalid-title {
+  margin: 0 0 8px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  line-height: 1.2;
 }

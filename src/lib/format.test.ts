@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   formatCompactPLN,
   formatDuration,
+  formatInstallmentCount,
   formatLoanMonth,
   formatMonths,
   formatPercent,
@@ -92,5 +93,17 @@ describe('formatYearTick', () => {
   it('shows whole years', () => {
     expect(formatYearTick(0)).toBe('0 r.')
     expect(formatYearTick(60)).toBe('5 r.')
+  })
+})
+
+describe('formatInstallmentCount', () => {
+  it.each([
+    [1, '1 rata'],
+    [2, '2 raty'],
+    [22, '22 raty'],
+    [25, '25 rat'],
+    [360, '360 rat'],
+  ])('%i -> %s', (count, expected) => {
+    expect(formatInstallmentCount(count)).toBe(expected)
   })
 })

@@ -3,6 +3,7 @@ import Assumptions from './components/Assumptions'
 import BalanceChart from './components/BalanceChart'
 import CumulativeInterestChart from './components/CumulativeInterestChart'
 import EffectComparison from './components/EffectComparison'
+import InvalidInputNotice from './components/InvalidInputNotice'
 import LoanForm from './components/LoanForm'
 import OverpaymentForm from './components/OverpaymentForm'
 import PaymentStructureChart from './components/PaymentStructureChart'
@@ -14,6 +15,7 @@ import { toLoanParams, type LoanFormValues } from './lib/loanForm'
 import { toOverpaymentPlan, type OverpaymentFormValues } from './lib/overpaymentForm'
 import { buildSchedule } from './lib/schedule'
 import { summarizeOverpayments } from './lib/summary'
+import { hasLoanErrors, hasOverpaymentErrors, validateLoanForm, validateOverpaymentForm } from './lib/validation'
 
 const DEFAULT_VALUES: LoanFormValues = {
   principal: '300 000',
@@ -39,7 +41,13 @@ function App() {
   const schedule = buildSchedule(loan)
   const scheduleWithOverpayments = buildSchedule(loan, plan)
   const summary = summarizeOverpayments(loan, plan)
-  const canShowCharts = schedule.length > 0 && Number.isFinite(summary.withOverpayments.totalPaid)
+
+  const loanErrors = validateLoanForm(values)
+  const overpaymentErrors = validateOverpaymentForm(
+    overpayments,
+    hasLoanErrors(loanErrors) ? NaN : loan.termMonths,
+  )
+  const isValid = !hasLoanErrors(loanErrors) && !hasOverpaymentErrors(overpaymentErrors)
 
   return (
     <>
@@ -57,16 +65,17 @@ function App() {
             Wpisz parametry kredytu i planowane nadpłaty. Zobaczysz, ile odsetek nie oddasz bankowi.
           </p>
           <div className="stack">
-            <LoanForm values={values} onChange={setValues} />
-            <OverpaymentForm values={overpayments} onChange={setOverpayments} />
+            <LoanForm values={values} errors={loanErrors} onChange={setValues} />
+            <OverpaymentForm values={overpayments} errors={overpaymentErrors} onChange={setOverpayments} />
           </div>
         </section>
 
         <div className="results-column">
-          <ResultSummary loan={loan} summary={summary} />
+          {!isValid && <InvalidInputNotice />}
 
-          {canShowCharts && (
+          {isValid && (
             <>
+              <ResultSummary loan={loan} summary={summary} />
               <EffectComparison
                 comparison={compareEffects(loan, plan)}
                 selected={plan.effect}

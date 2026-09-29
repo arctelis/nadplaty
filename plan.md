@@ -76,7 +76,7 @@ Każdy krok kończy się: `npm run test` + `npm run build` + pytania sprawdzają
 13. ✅ **Formularz parametrów kredytu** — pierwszy komponent, `useState`, kontrolowane inputy.
 14. ✅ **Lista nadpłat** — dodawanie/usuwanie nadpłat jednorazowych, pole nadpłaty cyklicznej.
 15. ✅ **Podsumowanie wyników** — komponent `ResultSummary` (dane przez props): oszczędność, kredyt krótszy o, suma nadpłat, łącznie zapłacone; poprawiona „rata po nadpłacie” (rata z miesiąca zaraz po nadpłacie, z numerem raty w etykiecie); notka o założeniach.
-15b. **Walidacja** — `src/lib/validation.ts` + testy; komunikaty po polsku pod polami (kwota > 0, oprocentowanie 0–30%, miesiące 0–11, okres 1 mies.–50 lat, nadpłaty w okresie kredytu); zamiast znikającego wyniku — „Popraw zaznaczone pola”.
+15b. ✅ **Walidacja** — `src/lib/validation.ts` + testy; komunikaty po polsku pod polami (kwota > 0, oprocentowanie 0–30%, miesiące 0–11, okres 1 mies.–50 lat, nadpłaty w okresie kredytu); zamiast znikającego wyniku — „Popraw zaznaczone pola”.
 15c. **Nadpłacać czy inwestować — logika** — porównanie przy tym samym miesięcznym budżecie: nadpłata (potem inwestowanie uwolnionej raty) vs inwestowanie kwot nadpłat; stopa brutto + opcja podatku Belki 19%; majątek na koniec pierwotnego okresu; testy.
 15d. **Nadpłacać czy inwestować — interfejs** — pole stopy, przełącznik podatku, wynik „nadpłata lepsza o X zł” / „inwestowanie lepsze o X zł”.
 16. **Tabela harmonogramu** — renderowanie listy przez `map`, klucze (`key`).
