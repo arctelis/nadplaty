@@ -1,14 +1,15 @@
 import { useState } from 'react'
+import Assumptions from './components/Assumptions'
 import BalanceChart from './components/BalanceChart'
 import CumulativeInterestChart from './components/CumulativeInterestChart'
 import EffectComparison from './components/EffectComparison'
 import LoanForm from './components/LoanForm'
 import OverpaymentForm from './components/OverpaymentForm'
 import PaymentStructureChart from './components/PaymentStructureChart'
+import ResultSummary from './components/ResultSummary'
 import ScheduleExport from './components/ScheduleExport'
 import { balanceSeries, cumulativeInterestSeries, yearlyBreakdown } from './lib/chartData'
-import { compareEffects } from './lib/comparison'
-import { formatMonths, formatPercent, formatPLN } from './lib/format'
+import { compareEffects, describeReferenceInstallment } from './lib/comparison'
 import { toLoanParams, type LoanFormValues } from './lib/loanForm'
 import { toOverpaymentPlan, type OverpaymentFormValues } from './lib/overpaymentForm'
 import { buildSchedule } from './lib/schedule'
@@ -37,7 +38,6 @@ function App() {
   const plan = toOverpaymentPlan(overpayments)
   const schedule = buildSchedule(loan)
   const scheduleWithOverpayments = buildSchedule(loan, plan)
-  const firstInstallment = schedule.length > 0 ? schedule[0].installment : NaN
   const summary = summarizeOverpayments(loan, plan)
   const canShowCharts = schedule.length > 0 && Number.isFinite(summary.withOverpayments.totalPaid)
 
@@ -63,28 +63,15 @@ function App() {
         </section>
 
         <div className="results-column">
-          <aside className="card result-panel">
-            <p className="eyebrow">Pierwsza rata</p>
-            <p className="result-amount">
-              {Number.isFinite(firstInstallment) ? formatPLN(firstInstallment) : '—'}
-            </p>
-            <p className="result-meta">
-              {values.installmentType === 'equal' ? 'Raty równe' : 'Raty malejące'}
-              {Number.isFinite(loan.termMonths) && ` · ${formatMonths(loan.termMonths)}`}
-              {Number.isFinite(loan.annualRatePercent) && ` · ${formatPercent(loan.annualRatePercent)}`}
-            </p>
-
-            <hr className="divider" />
-
-            <p className="eyebrow">Oszczędność na odsetkach</p>
-            <p className="result-amount">
-              {Number.isFinite(summary.interestSaved) ? formatPLN(summary.interestSaved) : '—'}
-            </p>
-          </aside>
+          <ResultSummary loan={loan} summary={summary} />
 
           {canShowCharts && (
             <>
-              <EffectComparison comparison={compareEffects(loan, plan)} selected={plan.effect} />
+              <EffectComparison
+                comparison={compareEffects(loan, plan)}
+                selected={plan.effect}
+                installmentLabel={describeReferenceInstallment(plan)}
+              />
               <BalanceChart
                 points={balanceSeries(loan.principal, schedule, scheduleWithOverpayments)}
                 payoffMonth={scheduleWithOverpayments.length}
@@ -98,6 +85,8 @@ function App() {
               <ScheduleExport withoutOverpayments={schedule} withOverpayments={scheduleWithOverpayments} />
             </>
           )}
+
+          <Assumptions />
         </div>
       </main>
     </>

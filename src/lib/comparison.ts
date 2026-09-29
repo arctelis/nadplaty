@@ -16,17 +16,29 @@ export interface EffectComparison {
   better: OverpaymentEffect | null
 }
 
-// The month after which we read the "installment after overpayments":
-// the last one-time overpayment, or 12 months of recurring overpayments.
+// The overpayment month after which we read the "installment after overpayment":
+// the last one-time overpayment, or the first recurring one when there are no one-time ones.
 // null = no overpayments, so the first installment is shown.
 export function referenceMonth(plan: OverpaymentPlan): number | null {
   if (plan.oneTime.length > 0) {
     return Math.max(...plan.oneTime.map((overpayment) => overpayment.month))
   }
   if (plan.recurring !== null) {
-    return plan.recurring.startMonth + 11
+    return plan.recurring.startMonth
   }
   return null
+}
+
+// Tells the reader exactly which installment the comparison shows.
+export function describeReferenceInstallment(plan: OverpaymentPlan): string {
+  const month = referenceMonth(plan)
+  if (month === null) {
+    return 'Pierwsza rata'
+  }
+  if (plan.oneTime.length > 0) {
+    return `Rata nr ${month + 1} (po nadpłacie w racie nr ${month})`
+  }
+  return `Rata nr ${month + 1} (po 1. nadpłacie cyklicznej)`
 }
 
 function installmentAfter(rows: ScheduleRow[], month: number | null): number {
