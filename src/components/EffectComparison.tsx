@@ -5,6 +5,8 @@ import type { OverpaymentEffect } from '../lib/types'
 interface EffectComparisonProps {
   comparison: Comparison
   selected: OverpaymentEffect
+  // Which installment the "installment after overpayment" row shows, e.g. "Rata nr 13 (...)".
+  installmentLabel: string
 }
 
 const COLUMNS: { effect: OverpaymentEffect; label: string }[] = [
@@ -12,18 +14,24 @@ const COLUMNS: { effect: OverpaymentEffect; label: string }[] = [
   { effect: 'lowerInstallment', label: 'Obniżyć ratę' },
 ]
 
-const ROWS: { label: string; value: (result: EffectResult) => string; markBetter?: boolean }[] = [
+const ROWS: {
+  label: string
+  value: (result: EffectResult) => string
+  markBetter?: boolean
+  showInstallmentLabel?: boolean
+}[] = [
   { label: 'Odsetki łącznie', value: (result) => formatPLN(result.totals.totalInterest) },
   { label: 'Oszczędność', value: (result) => formatPLN(result.interestSaved), markBetter: true },
   { label: 'Spłata po', value: (result) => formatDuration(result.totals.months) },
   {
-    label: 'Rata po nadpłatach',
+    label: 'Rata po nadpłacie',
     value: (result) =>
       Number.isFinite(result.installmentAfterOverpayments) ? formatPLN(result.installmentAfterOverpayments) : 'spłacony',
+    showInstallmentLabel: true,
   },
 ]
 
-function EffectComparison({ comparison, selected }: EffectComparisonProps) {
+function EffectComparison({ comparison, selected, installmentLabel }: EffectComparisonProps) {
   return (
     <section className="card comparison-card">
       <p className="eyebrow">Porównanie wariantów</p>
@@ -46,7 +54,10 @@ function EffectComparison({ comparison, selected }: EffectComparisonProps) {
         <tbody>
           {ROWS.map((row) => (
             <tr key={row.label}>
-              <th scope="row">{row.label}</th>
+              <th scope="row">
+                {row.label}
+                {row.showInstallmentLabel && <span className="row-note">{installmentLabel}</span>}
+              </th>
               {COLUMNS.map((column) => (
                 <td key={column.effect} className={column.effect === selected ? 'is-selected' : undefined}>
                   {row.value(comparison[column.effect])}

@@ -21,7 +21,8 @@ export function scheduleTotals(rows: ScheduleRow[]): ScheduleTotals {
 }
 
 export function summarizeOverpayments(loan: LoanParams, plan: OverpaymentPlan): OverpaymentSummary {
-  const withoutOverpayments = scheduleTotals(buildSchedule(loan))
+  const baseRows = buildSchedule(loan)
+  const withoutOverpayments = scheduleTotals(baseRows)
   const withOverpayments = scheduleTotals(buildSchedule(loan, plan))
 
   return {
@@ -29,5 +30,6 @@ export function summarizeOverpayments(loan: LoanParams, plan: OverpaymentPlan): 
     withOverpayments,
     interestSaved: withoutOverpayments.totalInterest - withOverpayments.totalInterest,
     monthsSaved: withoutOverpayments.months - withOverpayments.months,
+    firstInstallment: baseRows.length > 0 ? baseRows[0].installment : NaN,
   }
 }

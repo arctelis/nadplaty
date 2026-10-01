@@ -75,7 +75,10 @@ Każdy krok kończy się: `npm run test` + `npm run build` + pytania sprawdzają
 ### Etap 3 — interfejs (React)
 13. ✅ **Formularz parametrów kredytu** — pierwszy komponent, `useState`, kontrolowane inputy.
 14. ✅ **Lista nadpłat** — dodawanie/usuwanie nadpłat jednorazowych, pole nadpłaty cyklicznej.
-15. **Podsumowanie wyników** — komponent przyjmujący dane przez props.
+15. ✅ **Podsumowanie wyników** — komponent `ResultSummary` (dane przez props): oszczędność, kredyt krótszy o, suma nadpłat, łącznie zapłacone; poprawiona „rata po nadpłacie” (rata z miesiąca zaraz po nadpłacie, z numerem raty w etykiecie); notka o założeniach.
+15b. ✅ **Walidacja** — `src/lib/validation.ts` + testy; komunikaty po polsku pod polami (kwota > 0, oprocentowanie 0–30%, miesiące 0–11, okres 1 mies.–50 lat, nadpłaty w okresie kredytu); zamiast znikającego wyniku — „Popraw zaznaczone pola”.
+15c. ✅ **Nadpłacać czy inwestować — logika** — porównanie przy tym samym miesięcznym budżecie: nadpłata (potem inwestowanie uwolnionej raty) vs inwestowanie kwot nadpłat; stopa brutto + opcja podatku Belki 19%; majątek na koniec pierwotnego okresu; testy.
+15d. ✅ **Nadpłacać czy inwestować — interfejs** — pole stopy, przełącznik podatku, wynik „nadpłata lepsza o X zł” / „inwestowanie lepsze o X zł”.
 16. **Tabela harmonogramu** — renderowanie listy przez `map`, klucze (`key`).
 
 ### Etap 4 — oprocentowanie zmienne
@@ -94,7 +97,6 @@ Każdy krok kończy się: `npm run test` + `npm run build` + pytania sprawdzają
 21d. ✅ **Eksport do CSV** — generowanie tekstu CSV w `src/lib/` (średnik, przecinek dziesiętny, polskie znaki), przycisk „Pobierz harmonogram”.
 
 ### Etap 6 — wykończenie
-22. **Walidacja** — błędne/puste dane, komunikaty po polsku, logika walidacji w `src/lib/`.
 23. **Style i widok mobilny** — CSS, czytelność na telefonie.
 24. **README** — opis projektu, jak uruchomić, link do aplikacji.
 25. **Przegląd końcowy** — Jakub tłumaczy Claude'owi każdy plik w repo; co niejasne — wracamy.

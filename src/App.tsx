@@ -1,18 +1,29 @@
 import { useState } from 'react'
+import Assumptions from './components/Assumptions'
 import BalanceChart from './components/BalanceChart'
 import CumulativeInterestChart from './components/CumulativeInterestChart'
 import EffectComparison from './components/EffectComparison'
+import InvalidInputNotice from './components/InvalidInputNotice'
+import InvestComparison from './components/InvestComparison'
 import LoanForm from './components/LoanForm'
 import OverpaymentForm from './components/OverpaymentForm'
 import PaymentStructureChart from './components/PaymentStructureChart'
+import ResultSummary from './components/ResultSummary'
 import ScheduleExport from './components/ScheduleExport'
 import { balanceSeries, cumulativeInterestSeries, yearlyBreakdown } from './lib/chartData'
-import { compareEffects } from './lib/comparison'
-import { formatMonths, formatPercent, formatPLN } from './lib/format'
-import { toLoanParams, type LoanFormValues } from './lib/loanForm'
+import { compareEffects, describeReferenceInstallment } from './lib/comparison'
+import { compareOverpayingWithInvesting, type InvestFormValues } from './lib/investing'
+import { parseDecimal, toLoanParams, type LoanFormValues } from './lib/loanForm'
 import { toOverpaymentPlan, type OverpaymentFormValues } from './lib/overpaymentForm'
 import { buildSchedule } from './lib/schedule'
 import { summarizeOverpayments } from './lib/summary'
+import {
+  hasLoanErrors,
+  hasOverpaymentErrors,
+  validateLoanForm,
+  validateOverpaymentForm,
+  validateReturnRate,
+} from './lib/validation'
 
 const DEFAULT_VALUES: LoanFormValues = {
   principal: '300 000',
@@ -29,17 +40,29 @@ const DEFAULT_OVERPAYMENTS: OverpaymentFormValues = {
   oneTime: [{ id: 1, month: '12', amount: '20 000' }],
 }
 
+const DEFAULT_INVEST: InvestFormValues = {
+  grossAnnualReturnPercent: '5',
+  applyTax: true,
+}
+
 function App() {
   const [values, setValues] = useState<LoanFormValues>(DEFAULT_VALUES)
   const [overpayments, setOverpayments] = useState<OverpaymentFormValues>(DEFAULT_OVERPAYMENTS)
+  const [invest, setInvest] = useState<InvestFormValues>(DEFAULT_INVEST)
 
   const loan = toLoanParams(values)
   const plan = toOverpaymentPlan(overpayments)
   const schedule = buildSchedule(loan)
   const scheduleWithOverpayments = buildSchedule(loan, plan)
-  const firstInstallment = schedule.length > 0 ? schedule[0].installment : NaN
   const summary = summarizeOverpayments(loan, plan)
-  const canShowCharts = schedule.length > 0 && Number.isFinite(summary.withOverpayments.totalPaid)
+
+  const loanErrors = validateLoanForm(values)
+  const overpaymentErrors = validateOverpaymentForm(
+    overpayments,
+    hasLoanErrors(loanErrors) ? NaN : loan.termMonths,
+  )
+  const isValid = !hasLoanErrors(loanErrors) && !hasOverpaymentErrors(overpaymentErrors)
+  const investError = validateReturnRate(invest.grossAnnualReturnPercent)
 
   return (
     <>
@@ -57,34 +80,38 @@ function App() {
             Wpisz parametry kredytu i planowane nadpłaty. Zobaczysz, ile odsetek nie oddasz bankowi.
           </p>
           <div className="stack">
-            <LoanForm values={values} onChange={setValues} />
-            <OverpaymentForm values={overpayments} onChange={setOverpayments} />
+            <LoanForm values={values} errors={loanErrors} onChange={setValues} />
+            <OverpaymentForm values={overpayments} errors={overpaymentErrors} onChange={setOverpayments} />
           </div>
         </section>
 
         <div className="results-column">
-          <aside className="card result-panel">
-            <p className="eyebrow">Pierwsza rata</p>
-            <p className="result-amount">
-              {Number.isFinite(firstInstallment) ? formatPLN(firstInstallment) : '—'}
-            </p>
-            <p className="result-meta">
-              {values.installmentType === 'equal' ? 'Raty równe' : 'Raty malejące'}
-              {Number.isFinite(loan.termMonths) && ` · ${formatMonths(loan.termMonths)}`}
-              {Number.isFinite(loan.annualRatePercent) && ` · ${formatPercent(loan.annualRatePercent)}`}
-            </p>
+          {!isValid && <InvalidInputNotice />}
 
-            <hr className="divider" />
-
-            <p className="eyebrow">Oszczędność na odsetkach</p>
-            <p className="result-amount">
-              {Number.isFinite(summary.interestSaved) ? formatPLN(summary.interestSaved) : '—'}
-            </p>
-          </aside>
-
-          {canShowCharts && (
+          {isValid && (
             <>
-              <EffectComparison comparison={compareEffects(loan, plan)} selected={plan.effect} />
+              <ResultSummary loan={loan} summary={summary} />
+              <EffectComparison
+                comparison={compareEffects(loan, plan)}
+                selected={plan.effect}
+                installmentLabel={describeReferenceInstallment(plan)}
+              />
+              <InvestComparison
+                values={invest}
+                error={investError}
+                result={
+                  investError === undefined
+                    ? compareOverpayingWithInvesting(
+                        loan,
+                        plan,
+                        parseDecimal(invest.grossAnnualReturnPercent),
+                        invest.applyTax,
+                      )
+                    : null
+                }
+                hasOverpayments={plan.oneTime.length > 0 || plan.recurring !== null}
+                onChange={setInvest}
+              />
               <BalanceChart
                 points={balanceSeries(loan.principal, schedule, scheduleWithOverpayments)}
                 payoffMonth={scheduleWithOverpayments.length}
@@ -98,6 +125,8 @@ function App() {
               <ScheduleExport withoutOverpayments={schedule} withOverpayments={scheduleWithOverpayments} />
             </>
           )}
+
+          <Assumptions />
         </div>
       </main>
     </>

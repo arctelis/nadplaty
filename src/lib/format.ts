@@ -66,3 +66,17 @@ export function formatLoanMonth(month: number): string {
 export function formatYearTick(month: number): string {
   return `${month / 12} r.`
 }
+
+const INSTALLMENT_FORMS: Record<Intl.LDMLPluralRule, string> = {
+  zero: 'rat',
+  one: 'rata',
+  two: 'raty',
+  few: 'raty',
+  many: 'rat',
+  other: 'raty',
+}
+
+// 1 rata, 22 raty, 360 rat.
+export function formatInstallmentCount(count: number): string {
+  return `${count} ${INSTALLMENT_FORMS[pluralRules.select(count)]}`
+}

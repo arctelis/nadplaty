@@ -53,4 +53,6 @@ export interface OverpaymentSummary {
   withOverpayments: ScheduleTotals
   interestSaved: number
   monthsSaved: number
+  // NaN when the schedule is empty (e.g. invalid input).
+  firstInstallment: number
 }

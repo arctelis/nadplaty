@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareEffects, referenceMonth } from './comparison'
+import { compareEffects, describeReferenceInstallment, referenceMonth } from './comparison'
 import type { LoanParams, OverpaymentPlan } from './types'
 
 // Same round-number loan as in schedule.test.ts: 1% per month, 1000 principal part.
@@ -22,9 +22,9 @@ describe('referenceMonth', () => {
     expect(referenceMonth(plan({ oneTime: [{ month: 24, amount: 1 }, { month: 10, amount: 1 }] }))).toBe(24)
   })
 
-  it('is after 12 recurring overpayments when there are no one-time ones', () => {
-    expect(referenceMonth(plan({ recurring: { startMonth: 1, amount: 100 } }))).toBe(12)
-    expect(referenceMonth(plan({ recurring: { startMonth: 25, amount: 100 } }))).toBe(36)
+  it('is the first recurring overpayment when there are no one-time ones', () => {
+    expect(referenceMonth(plan({ recurring: { startMonth: 1, amount: 100 } }))).toBe(1)
+    expect(referenceMonth(plan({ recurring: { startMonth: 25, amount: 100 } }))).toBe(25)
   })
 
   it('is null without overpayments', () => {
@@ -56,10 +56,10 @@ describe('compareEffects', () => {
     expect(result.better).toBe('shortenTerm')
   })
 
-  it('recurring only: installment read after 12 overpayments', () => {
+  it('recurring only: installment read in the month right after the first overpayment', () => {
     const result = compareEffects(decreasing, plan({ recurring: { startMonth: 1, amount: 1000 } }))
-    // After 12 months: 120k - 12 * (1000 + 1000) = 96k -> month 13: 1000 + 960
-    expect(result.shortenTerm.installmentAfterOverpayments).toBeCloseTo(1960, 6)
+    // After month 1: 120k - 1000 - 1000 = 118k -> month 2: 1000 + 1180
+    expect(result.shortenTerm.installmentAfterOverpayments).toBeCloseTo(2180, 6)
   })
 
   it('without overpayments: nothing saved, no winner, first installment shown', () => {
@@ -73,5 +73,23 @@ describe('compareEffects', () => {
   it('installment is NaN when the overpayment repays the whole loan', () => {
     const result = compareEffects(decreasing, plan({ oneTime: [{ month: 3, amount: 1_000_000 }] }))
     expect(result.shortenTerm.installmentAfterOverpayments).toBeNaN()
+  })
+})
+
+describe('describeReferenceInstallment', () => {
+  it('names the installment right after the last one-time overpayment', () => {
+    expect(describeReferenceInstallment(plan({ oneTime: [{ month: 12, amount: 1 }] }))).toBe(
+      'Rata nr 13 (po nadpłacie w racie nr 12)',
+    )
+  })
+
+  it('names the installment right after the first recurring overpayment', () => {
+    expect(describeReferenceInstallment(plan({ recurring: { startMonth: 1, amount: 500 } }))).toBe(
+      'Rata nr 2 (po 1. nadpłacie cyklicznej)',
+    )
+  })
+
+  it('falls back to the first installment without overpayments', () => {
+    expect(describeReferenceInstallment(plan({}))).toBe('Pierwsza rata')
   })
 })

@@ -58,4 +58,18 @@ describe('summarizeOverpayments', () => {
     expect(summary.interestSaved).toBe(0)
     expect(summary.monthsSaved).toBe(0)
   })
+
+  it('reports the first installment of the schedule without overpayments', () => {
+    const summary = summarizeOverpayments(decreasing, { oneTime: [], recurring: null, effect: 'shortenTerm' })
+    // 1000 principal part + 1% of 120k
+    expect(summary.firstInstallment).toBeCloseTo(2200, 6)
+  })
+
+  it('has NaN as the first installment for an empty schedule', () => {
+    const summary = summarizeOverpayments(
+      { ...decreasing, principal: NaN },
+      { oneTime: [], recurring: null, effect: 'shortenTerm' },
+    )
+    expect(summary.firstInstallment).toBeNaN()
+  })
 })
